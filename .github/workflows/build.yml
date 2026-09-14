@@ -17,5 +17,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: tzahip/meeting-worker:v3
+          tags: tzahip/meeting-worker:v4
           platforms: linux/amd64
