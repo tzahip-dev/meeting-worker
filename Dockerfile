@@ -1,0 +1,20 @@
+# Meeting Capture Worker — RunPod Serverless
+# Uses pytorch base (CUDA 12.1) with all deps baked in
+
+FROM runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04
+
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
+    ffmpeg libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --quiet -r /tmp/requirements.txt
+
+COPY vast_worker.py /vast_worker.py
+COPY runpod_handler.py /runpod_handler.py
+
+ENV MODELS_DIR=/models
+
+CMD ["python", "-u", "/runpod_handler.py"]
