@@ -343,6 +343,7 @@ def _diarize_pyannote(audio_path: Path, num_speakers: int) -> tuple[list, str]:
     t0 = time.time()
     log("   Loading pyannote community-1...")
     import torch
+    import torchvision
     from pyannote.audio import Pipeline
 
     pipeline = Pipeline.from_pretrained(
