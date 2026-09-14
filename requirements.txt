@@ -1,15 +1,10 @@
-# Meeting Capture Worker deps — torch comes from the pytorch base image
-# ⚠️ Do NOT add torch/torchaudio here — base image provides them.
-# ⚠️ Pin versions to avoid pip upgrading torch (CUDA 12.1 → 13 mismatch).
-
-faster-whisper>=1.0.0,<2.0
-ctranslate2>=4.0,<5.0
-pyannote.audio>=3.3,<5.0
-speechbrain>=1.0,<2.0
+faster-whisper>=1.0.0
+ctranslate2>=4.0
+pyannote.audio>=3.3
+speechbrain>=1.0
 soundfile>=0.12
 librosa>=0.10
 requests>=2.28
 pyyaml>=6.0
 huggingface_hub>=0.20
 runpod>=1.7.0
-numpy<2.0
