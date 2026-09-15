@@ -10,7 +10,8 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir --quiet -r /tmp/requirements.txt
 
 # Reinstall torchvision with CUDA 12.1 kernel (pyannote needs nms)
-RUN pip install --no-cache-dir --quiet torchvision==0.17.0+cu121 \
+# --no-deps prevents upgrading torch (which pulls CUDA 13 runtime)
+RUN pip install --no-cache-dir --quiet --no-deps torchvision==0.17.0+cu121 \
     --index-url https://download.pytorch.org/whl/cu121
 
 COPY vast_worker.py /vast_worker.py
