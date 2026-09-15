@@ -1,6 +1,3 @@
-# Meeting Capture Worker — RunPod Serverless
-# Uses pytorch base (CUDA 12.1) with all deps baked in
-
 FROM runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04
 
 ENV PYTHONUNBUFFERED=1
@@ -11,6 +8,10 @@ RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir --quiet -r /tmp/requirements.txt
+
+# Reinstall torchvision with CUDA 12.1 kernel (pyannote needs nms)
+RUN pip install --no-cache-dir --quiet torchvision==0.17.0+cu121 \
+    --index-url https://download.pytorch.org/whl/cu121
 
 COPY vast_worker.py /vast_worker.py
 COPY runpod_handler.py /runpod_handler.py
