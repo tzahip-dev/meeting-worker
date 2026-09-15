@@ -361,7 +361,14 @@ def _diarize_pyannote(audio_path: Path, num_speakers: int) -> tuple[list, str]:
     if num_speakers > 0:
         params["num_speakers"] = num_speakers
 
-    result = pipeline(str(audio_path), **params)
+      try:
+        result = pipeline(str(audio_path), **params)
+    except RuntimeError as e:
+        err = str(e)[:60]
+        log(f"   Diarization fell back to CPU ({err})")
+        pipeline.to(torch.device("cpu"))
+        result = pipeline(str(audio_path), **params)
+    
     turns = []
 
     # Handle both standard pyannote Annotation and community-1 DiarizeOutput
