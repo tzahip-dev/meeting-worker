@@ -1,5 +1,5 @@
 faster-whisper
-ctranslate2
+ctranslate2>=4.6.3
 pyannote.audio==4.0.7
 speechbrain
 soundfile

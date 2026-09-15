@@ -1,5 +1,8 @@
-torch==2.2.0
-torchvision==0.17.0
-torchaudio==2.2.0
-pyannote-core>=6.0.1
-pyannote-pipeline>=4.0.0
+# torch family — must match the base image (CUDA 12.8) exactly
+torch==2.8.0
+torchvision==0.23.0
+torchaudio==2.8.0
+torchcodec==0.7.0
+
+# ctranslate2 >= 4.5.0 is cuDNN 9 only; >= 4.6.3 adds official CUDA 12.8 support
+ctranslate2>=4.6.3,<5
