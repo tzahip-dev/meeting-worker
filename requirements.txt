@@ -8,3 +8,4 @@ requests
 pyyaml
 huggingface_hub
 runpod
+matplotlib
