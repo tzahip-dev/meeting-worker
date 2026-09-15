@@ -6,11 +6,15 @@
 # reachable. That way worker-code fixes take effect on the next cold start
 # without a 10-minute image rebuild. A downloaded file is only accepted if it
 # parses as Python, so a truncated transfer can never break the worker.
+#
+# IMPORTANT — do NOT export empty SSL_CERT_FILE / CURL_CA_BUNDLE here.
+# An empty SSL_CERT_FILE makes rustls/reqwest fail to build its TLS connector,
+# which surfaces as `Reqwest error: builder error` from hf_xet and kills every
+# HuggingFace download. `curl -k` already handles the self-signed VPS cert, and
+# the worker's own HTTP calls pass verify=False, so no global env is needed.
 set -u
 
 VPS_URL="${VPS_URL:-}"
-export CURL_CA_BUNDLE=""
-export SSL_CERT_FILE=""
 
 if [ -n "$VPS_URL" ]; then
     for f in vast_worker.py runpod_handler.py; do

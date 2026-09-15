@@ -74,6 +74,58 @@ def boot_check() -> None:
         print(f"[boot] FAILED: {e}", flush=True)
         report("boot_fail", f"{e} | {traceback.format_exc()[:600]}")
 
+    hf_probe()
+
+
+# ── HuggingFace download probe ──────────────────────────────────────────────
+# A job that dies during ASR model download leaves no trace in RunPod serverless
+# (worker stdout is not exposed), so probe the download path at boot and ship the
+# result to the VPS receiver.
+HF_RELEVANT_ENV = (
+    "HF_HOME", "HF_HUB_OFFLINE", "HF_HUB_DISABLE_XET", "HF_XET_HIGH_PERFORMANCE",
+    "HF_HUB_ENABLE_HF_TRANSFER", "HF_ENDPOINT", "HF_TOKEN", "HUGGING_FACE_HUB_TOKEN",
+    "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "http_proxy", "https_proxy",
+)
+
+
+def _env_report() -> str:
+    bits = []
+    for k in HF_RELEVANT_ENV:
+        v = os.environ.get(k)
+        if v is None:
+            continue
+        if "TOKEN" in k:
+            v = f"set(len={len(v)})"
+        bits.append(f"{k}={v}")
+    return " ".join(bits) or "(none set)"
+
+
+def hf_probe() -> None:
+    """Try a small and a large HuggingFace download; report what happens."""
+    lines = [f"env: {_env_report()}"]
+    try:
+        from huggingface_hub import hf_hub_download
+
+        for fname in ("config.json", "model.bin"):
+            t0 = time.time()
+            try:
+                p = hf_hub_download(
+                    "ivrit-ai/whisper-large-v3-turbo-ct2",
+                    fname,
+                    cache_dir=str(vw.MODELS_DIR / "asr"),
+                )
+                lines.append(f"{fname}: OK ({time.time() - t0:.1f}s)")
+                del p
+            except Exception as e:  # noqa: BLE001
+                lines.append(f"{fname}: FAIL {type(e).__name__}: {repr(e)[:400]}")
+                lines.append(f"  trace: {traceback.format_exc()[-500:]}")
+    except Exception as e:  # noqa: BLE001
+        lines.append(f"probe setup FAIL: {e}")
+
+    detail = "\n".join(lines)
+    print(f"[hfprobe]\n{detail}", flush=True)
+    report("hf_probe", detail)
+
 
 def handler(event):
     t_start = time.time()
