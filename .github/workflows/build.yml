@@ -1,10 +1,12 @@
 name: Build & Push Docker Image
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
 jobs:
-  build-and-push:
+  build-worker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -12,10 +14,31 @@ jobs:
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          password: *** secrets.DOCKER_HUB_TOKEN }}
       - uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile
           push: true
-          tags: tzahip/meeting-worker:v4
+          tags: |
+            tzahip/meeting-worker:build-${{ github.sha }}
+            tzahip/meeting-worker:latest
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-echo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: *** secrets.DOCKER_HUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: tzahip/meeting-worker:echo
+          platforms: linux/amd64
+          file: ./echo.Dockerfile
