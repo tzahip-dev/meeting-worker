@@ -1,6 +1,6 @@
 faster-whisper
 ctranslate2
-pyannote.audio
+pyannote.audio==4.0.7
 speechbrain
 soundfile
 librosa
