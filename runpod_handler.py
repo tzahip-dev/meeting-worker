@@ -92,7 +92,7 @@ def handler(event):
         duration_s = vw.get_audio_duration(wav_path)
         vw.log(f"   Duration: {duration_s:.0f}s ({duration_s / 60:.1f}min)")
 
-        source = vw.generate_source_info(wav_path, sha256_hex)
+        source = vw.generate_source_info(wav_path, sha256_hex, inp)
         success = vw.process_one(wav_path, sha256_hex, source, duration_s)
 
         elapsed = time.time() - t_start

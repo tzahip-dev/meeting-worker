@@ -67,5 +67,7 @@ PY
 
 COPY vast_worker.py /vast_worker.py
 COPY runpod_handler.py /runpod_handler.py
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-CMD ["python", "-u", "/runpod_handler.py"]
+CMD ["/start.sh"]
