@@ -7,5 +7,8 @@ librosa
 requests
 pyyaml
 huggingface_hub
-runpod
 matplotlib
+# NOTE: `runpod` is intentionally NOT here. It depends on paramiko -> cryptography,
+# and the base image's cryptography is Debian-managed (no RECORD file), so pip
+# aborts the whole transaction trying to uninstall it. It is installed in its own
+# step with --ignore-installed cryptography instead.

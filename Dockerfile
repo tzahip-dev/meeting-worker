@@ -8,7 +8,7 @@
 #   torchcodec  : 0.7.0   (the release built against torch 2.8 — ABI matched)
 #
 # Do NOT relax the torch pins: an unconstrained `pip install` upgrades torch to a
-# CUDA-13 build and re-breaks ctranslate2 with a silent segfault at ASR load.
+# newer CUDA build and re-breaks ctranslate2 with a silent segfault at ASR load.
 
 FROM runpod/pytorch:1.3.0-cu1281-torch280-ubuntu2404
 
@@ -36,11 +36,18 @@ RUN python -m pip install --no-cache-dir --no-deps torchcodec==0.7.0
 RUN python -m pip install --no-cache-dir --timeout 900 \
         -r /tmp/requirements.txt -c /tmp/constraints.txt
 
-# 4) build-time gate — fail the build, not the job
+# 4) runpod SDK. Its dependency chain pulls `cryptography`, and the base image's
+#    cryptography is Debian-managed with no RECORD file — pip cannot uninstall it
+#    and aborts the transaction. --ignore-installed sidesteps the uninstall.
+RUN python -m pip install --no-cache-dir --timeout 900 \
+        --ignore-installed cryptography runpod
+
+# 5) build-time gate — fail the build, not the job
 RUN python - <<'PY'
 import inspect
 import torch, torchvision, torchaudio, torchcodec
 import ctranslate2, faster_whisper, speechbrain
+import runpod
 import pyannote.audio as pa
 from pyannote.audio.pipelines import SpeakerDiarization as SD
 
@@ -52,10 +59,10 @@ assert torch.version.cuda == "12.8", f"torch cuda={torch.version.cuda}"
 assert pa.__version__.startswith("4."), f"pyannote.audio={pa.__version__}"
 assert tuple(int(x) for x in ctranslate2.__version__.split(".")[:2]) >= (4, 6), \
     f"ctranslate2={ctranslate2.__version__} (needs >=4.6.3 for CUDA 12.8)"
-print("BUILD-OK torch=%s cuda=%s tvm=%s ta=%s tc=%s pyannote=%s ct2=%s" % (
+print("BUILD-OK torch=%s cuda=%s tvm=%s ta=%s tc=%s pyannote=%s ct2=%s runpod=%s" % (
     torch.__version__, torch.version.cuda, torchvision.__version__,
     torchaudio.__version__, torchcodec.__version__, pa.__version__,
-    ctranslate2.__version__))
+    ctranslate2.__version__, runpod.__version__))
 PY
 
 COPY vast_worker.py /vast_worker.py
